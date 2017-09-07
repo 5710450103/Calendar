@@ -9,29 +9,24 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 
-/**
- * Hello world!
- *
- */
-public class Main extends Application
-{
-    public static void main( String[] args )
-    {
+public class Main extends Application {
+	
+    public static void main( String[] args ){
     	launch(args);
     }
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
-		// TODO Auto-generated method stub
+		Stage window = primaryStage;
 		Parent root = FXMLLoader.load(getClass().getResource("Main.fxml"));
 		Scene scene = new Scene(root);
-		primaryStage.setTitle("My Events");
-		primaryStage.setScene(scene);
-		primaryStage.show();
+		window.setTitle("My Event");
+		window.setScene(scene);
+		window.show();
 	}
 
 	public static Window getPrimaryStage() {
-		// TODO Auto-generated method stub
 		return null;
 	}
+	
 }
