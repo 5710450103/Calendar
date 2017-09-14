@@ -15,6 +15,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
@@ -51,21 +52,22 @@ public class View implements Initializable {
 	private ComboBox<String> hourBox;
 	@FXML
 	private ComboBox<String> minBox;
-	
+	@FXML
+	private ComboBox<String> dayBox;
+	@FXML
+	private RadioButton dailyButt;
+	@FXML
+	private RadioButton weeklyButt;
+	@FXML
+	private RadioButton monthlyButt;
+
 	// ObservableList : value in ComboBox and Table
-	ObservableList<String> minList = FXCollections.observableArrayList(
-			"00", "01", "02", "03", "04", "05", "06", "07", "08", "09", 
-			"10", "11", "12", "13", "14", "15", "16", "17", "18", "19", 
-			"20", "21", "22", "23", "24", "25", "26", "27", "28", "29", 
-			"30", "31", "32", "33", "34", "35", "36", "37", "38", "39", 
-			"40", "41", "42", "43", "44", "45", "46", "47", "48", "49", 
-			"50", "51", "52", "53", "54", "55", "56", "57", "58", "59");
-	
-	ObservableList<String> hourList = FXCollections.observableArrayList(
-			"00", "01", "02", "03", "04", "05", "06", "07", "08", "09", 
-			"10", "11", "12", "13", "14", "15", "16", "17", "18", "19", 
-			"20", "21", "22", "23");
-	
+	ObservableList<String> minList = FXCollections.observableArrayList("00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50", "51", "52", "53", "54", "55", "56", "57", "58", "59");
+
+	ObservableList<String> hourList = FXCollections.observableArrayList("00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23");
+
+	ObservableList<String> dayList = FXCollections.observableArrayList("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday");
+
 	ObservableList<Calendar> tableList = FXCollections.observableArrayList();
 
 	// Initialize
@@ -83,9 +85,10 @@ public class View implements Initializable {
 		// ComboBox
 		hourBox.setItems(hourList);
 		minBox.setItems(minList);
+		dayBox.setItems(dayList);
 	}
-	
-	//Set column header
+
+	// Set column header
 	private void setCellTable() {
 		number.setCellValueFactory(new PropertyValueFactory<Calendar, Integer>("number"));
 		date.setCellValueFactory(new PropertyValueFactory<Calendar, String>("date"));
@@ -95,6 +98,11 @@ public class View implements Initializable {
 
 	private void clearForm() {
 		table.getSelectionModel().select(null);
+		dayBox.setDisable(true);
+		dailyButt.setSelected(false);
+		weeklyButt.setSelected(false);
+		monthlyButt.setSelected(false);
+		dp.setDisable(false);
 		dp.getEditor().clear();
 		hourBox.getSelectionModel().clearSelection();
 		minBox.getSelectionModel().clearSelection();
@@ -111,17 +119,57 @@ public class View implements Initializable {
 		}
 	}
 
+	// RADIO BUTTON ACTION
+	public void radioSelect(ActionEvent event) {
+		if (dailyButt.isSelected()) {
+			dp.setDisable(true);
+			dayBox.setDisable(true);
+		} else if (weeklyButt.isSelected()) {
+			dp.setDisable(true);
+			dayBox.setDisable(false);
+
+		} else if (monthlyButt.isSelected()) {
+			dp.setDisable(false);
+			dayBox.setDisable(true);
+		}
+	}
+
 	// SAVE BUTTON ACTION
 	public void saveDate(ActionEvent event) throws SQLException {
 		try {
 			if (hourBox.getSelectionModel().isEmpty() || minBox.getSelectionModel().isEmpty() || textArea.getText().equals("")) {
 				control.alertBox(AlertType.INFORMATION, "Empty Field", "Found empty field", "Please, check again");
 			} else {
-				control.saveEvent(control.getEvent(1, control.changeDateFormat(dp.getValue()), hourBox.getValue() + ":" + minBox.getValue(), textArea.getText()));
-				setCellTable();
-				control.loadDataFromDB(tableList, table);
-				clearForm();
-				System.out.println("Save Success!!");
+				// Daily
+				if (dailyButt.isSelected()) {
+					control.saveEvent(control.getEvent(1, "Daily", hourBox.getValue() + ":" + minBox.getValue(), textArea.getText()));
+					setCellTable();
+					control.loadDataFromDB(tableList, table);
+					clearForm();
+					System.out.println("Save Success!!");
+				}
+				// Weekly
+				else if (weeklyButt.isSelected()) {
+					control.saveEvent(control.getEvent(1, control.weeklyFormat(dayBox), hourBox.getValue() + ":" + minBox.getValue(), textArea.getText()));
+					setCellTable();
+					control.loadDataFromDB(tableList, table);
+					clearForm();
+					System.out.println("Save Success!!");
+				}
+				// Monthly
+				else if (monthlyButt.isSelected()) {
+					control.saveEvent(control.getEvent(1, control.monthlyFormat(dp.getValue()), hourBox.getValue() + ":" + minBox.getValue(), textArea.getText()));
+					setCellTable();
+					control.loadDataFromDB(tableList, table);
+					clearForm();
+					System.out.println("Save Success!!");
+				} else {
+					control.saveEvent(control.getEvent(1, control.changeDateFormat(dp.getValue()), hourBox.getValue() + ":" + minBox.getValue(), textArea.getText()));
+					setCellTable();
+					control.loadDataFromDB(tableList, table);
+					clearForm();
+					System.out.println("Save Success!!");
+				}
 			}
 		} catch (Exception e) {
 			control.alertBox(AlertType.ERROR, "Date Picker Error", "Something wrong", "Please, select date again.");
@@ -139,12 +187,40 @@ public class View implements Initializable {
 					control.alertBox(AlertType.INFORMATION, "Empty Field", "Found empty field", "Please, check again");
 				} else {
 					if (control.alertConfirm("Edit Event", "Do you want to edit this event?", "").get() == ButtonType.OK) {
-						num = c.getNumber();
-						control.editEvent(num, control.getEvent(num, control.changeDateFormat(dp.getValue()), hourBox.getValue() + ":" + minBox.getValue(), textArea.getText()));
-						setCellTable();
-						control.loadDataFromDB(tableList, table);
-						clearForm();
-						System.out.println("Edit Success!!");
+						// Daily
+						if (dailyButt.isSelected()) {
+							num = c.getNumber();
+							control.editEvent(num, control.getEvent(num, "Daily", hourBox.getValue() + ":" + minBox.getValue(), textArea.getText()));
+							setCellTable();
+							control.loadDataFromDB(tableList, table);
+							clearForm();
+							System.out.println("Edit Success!!");
+						}
+						// Weekly
+						else if (weeklyButt.isSelected()) {
+							num = c.getNumber();
+							control.editEvent(num, control.getEvent(num, control.weeklyFormat(dayBox), hourBox.getValue() + ":" + minBox.getValue(), textArea.getText()));
+							setCellTable();
+							control.loadDataFromDB(tableList, table);
+							clearForm();
+							System.out.println("Edit Success!!");
+						}
+						// Monthly
+						else if (monthlyButt.isSelected()) {
+							num = c.getNumber();
+							control.editEvent(num, control.getEvent(num, control.monthlyFormat(dp.getValue()), hourBox.getValue() + ":" + minBox.getValue(), textArea.getText()));
+							setCellTable();
+							control.loadDataFromDB(tableList, table);
+							clearForm();
+							System.out.println("Edit Success!!");
+						} else {
+							num = c.getNumber();
+							control.editEvent(num, control.getEvent(num, control.changeDateFormat(dp.getValue()), hourBox.getValue() + ":" + minBox.getValue(), textArea.getText()));
+							setCellTable();
+							control.loadDataFromDB(tableList, table);
+							clearForm();
+							System.out.println("Edit Success!!");
+						}
 					} else {
 						System.out.println("Edit Cancel");
 					}
@@ -164,7 +240,7 @@ public class View implements Initializable {
 		Calendar c = table.getSelectionModel().getSelectedItem();
 		if (index >= 0) {
 			try {
-				if (control.alertConfirm("Delete Event","Do you want to delete this event?", "" ).get() == ButtonType.OK) {
+				if (control.alertConfirm("Delete Event", "Do you want to delete this event?", "").get() == ButtonType.OK) {
 					num = c.getNumber();
 					control.deleteEvent(num);
 					setCellTable();
