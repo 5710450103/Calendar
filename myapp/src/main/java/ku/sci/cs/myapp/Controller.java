@@ -17,7 +17,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.TableView;
 
-public class Controller {
+public class Controller implements DatabaseController{
 	
 	Connection con = null;
 	PreparedStatement pst = null;
@@ -163,6 +163,21 @@ public class Controller {
 		finally {
 			pst.close();
 		}
+	}
+	
+	//SEARCH CONTROL
+	public void searchEvent(ObservableList<Calendar> tableList, TableView<Calendar> table, String date) throws SQLException {
+		tableList.clear();
+		try {
+			pst = con.prepareStatement("Select * from db_calendar where date='" + date + "'");
+			rs = pst.executeQuery();
+			while(rs.next()) {
+				tableList.add(new Calendar(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4)));
+			}
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+		table.setItems(tableList);
 	}
 
 }
